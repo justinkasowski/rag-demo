@@ -79,7 +79,7 @@ def try_rule_based_plan(instruction: str) -> Optional[MessagePlan]:
     if not send_intent and not has_real_integration:
         return MessagePlan(
             integrations=[Integration.none],
-            channel=Channel.none,
+            channel=None,
             requiresReview=False,
             rationale="No send request was made.",
         )
@@ -98,14 +98,14 @@ def try_rule_based_plan(instruction: str) -> Optional[MessagePlan]:
     if len(channel_matches) == 0:
         return MessagePlan(
             integrations=integrations,
-            channel=Channel.none,
+            channel=None,
             requiresReview=True,
             rationale=_build_rationale(integrations, channel_matches),
         )
 
     return MessagePlan(
         integrations=integrations,
-        channel=Channel.none,
+        channel=None,
         requiresReview=True,
         rationale=_build_rationale(integrations, channel_matches),
     )
@@ -118,19 +118,19 @@ def enforce_plan_consistency(plan: MessagePlan, instruction: str) -> MessagePlan
 
     if not has_real_integration:
         plan.integrations = [Integration.none]
-        plan.channel = Channel.none
+        plan.channel = None
         plan.requiresReview = False
         plan.rationale = "No send request was made."
         return plan
 
     if len(channel_matches) == 0:
-        plan.channel = Channel.none
+        plan.channel = None
         plan.requiresReview = True
         plan.rationale = "The user requested an integration but did not specify a channel."
         return plan
 
     if len(channel_matches) > 1:
-        plan.channel = Channel.none
+        plan.channel = None
         plan.requiresReview = True
         plan.rationale = "The user referenced multiple possible channels, so manual review is required."
         return plan

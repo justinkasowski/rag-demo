@@ -2,9 +2,14 @@
 
 LOCAL_RUN = os.environ.get("LOCAL_RUN", "false").lower() == "true"
 
-MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2:3b")
+
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASS = os.getenv("DB_PASS", "postgres")
+DB_NAME = os.getenv("DB_NAME", "postgres")
+
+MODEL = os.environ.get("OLLAMA_MODEL", "llama3:8b")
 OLLAMA_KEEP_ALIVE = os.environ.get("OLLAMA_KEEP_ALIVE", "30m")
-OLLAMA_URL = os.environ.get("OLLAMA_URL", "127.0.0.1/api/generate")
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1/api/generate")
 
 EMBED_MODEL_NAME = os.environ.get(
     "EMBED_MODEL_NAME",

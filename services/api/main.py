@@ -80,8 +80,7 @@ def home():
 
 @app.on_event("startup")
 def startup():
-    if not LOCAL_RUN:
-        init_db()
+    init_db()
 
 @app.post("/warmup")
 def warmup():
