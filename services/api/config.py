@@ -4,7 +4,7 @@ LOCAL_RUN = os.environ.get("LOCAL_RUN", "false").lower() == "true"
 
 MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2:3b")
 OLLAMA_KEEP_ALIVE = os.environ.get("OLLAMA_KEEP_ALIVE", "30m")
-OLLAMA_URL = os.environ.get("OLLAMA_HOST", "http://localhost:11434/api/generate")
+OLLAMA_URL = os.environ.get("OLLAMA_HOST", "http://ollama:11434/api/generate")
 
 EMBED_MODEL_NAME = os.environ.get(
     "EMBED_MODEL_NAME",

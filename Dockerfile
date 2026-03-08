@@ -2,7 +2,7 @@
 
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
-ENV OLLAMA_HOST=http://localhost:11434
+ENV OLLAMA_HOST=OLLAMA_HOST=http://ollama:11434/api/generate
 ENV PORT=8080
 
 WORKDIR /app
