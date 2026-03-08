@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Local RAG Demo</title>
+  <title>{{ "Local" if LOCAL_RUN else "Deployed" }} RAG Demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="/static/styles.css">
 </head>
@@ -42,9 +42,36 @@
   <div class="app-shell">
     <div class="topbar">
       <section class="hero">
+
+        <aside class="integrations-card">
+
+          <div class="integration-icons">
+            <a href="https://discord.gg/2drHu6kT" target="_blank">
+              <img src="/static/discord.png" class="integration-icon">
+            </a>
+
+            <a href="https://join.slack.com/t/jobsearchsamplerepo/shared_invite/zt-3rv3m9rmr-0fZsxWpXCgGtEG4WM2aQYw" target="_blank">
+              <img src="/static/slack.png" class="integration-icon">
+            </a>
+          </div>
+
+          <div class="integration-text">
+            <script>
+            document.write(__LOCAL_RUN__
+              ? "Local Build<br>Webhooks inactive"
+              : "Join the servers to see the integrations");
+            </script>
+          </div>
+
+        </aside>
+
         <div class="hero-center">
           <div class="hero-content">
-            <h1>Local RAG Demo</h1>
+            <h1><script>
+              document.write(__LOCAL_RUN__
+                ? "Local Rag Demo"
+                : "Deployed Rag Demo");
+            </script></h1>
             <div class="hero-subtitle">
               FastAPI + Ollama + LangChain + Chroma
             </div>

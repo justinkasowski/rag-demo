@@ -776,6 +776,7 @@ window.addEventListener("load", async () => {
     .addEventListener("change", syncCorpusQueryVisibility);
 });
 
+
 window.healthCheck = healthCheck;
 window.ingestCorpus = ingestCorpus;
 window.generateQuestion = generateQuestion;

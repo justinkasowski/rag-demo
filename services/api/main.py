@@ -1,17 +1,19 @@
 ﻿from pathlib import Path
 from typing import Optional
 
-import os
 import requests
 
 import firebase_admin
 from firebase_admin import auth
 from google.cloud import firestore
+from google.cloud.firestore_v1 import Increment
+
 from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from pydantic import BaseModel
+
 
 from config import AVAILABLE_CORPORA, MODEL, OLLAMA_KEEP_ALIVE, OLLAMA_URL, LOCAL_RUN
 from integrations.integrationsHandler import plan_message, send_message
@@ -20,12 +22,38 @@ from rag.ingest import ingest_corpus
 from rag.retrieve import corpus_has_documents, rag_answer
 
 QUERY_LIMIT = 100
+runCount=0
 
 db = None
 
 if not LOCAL_RUN:
     firebase_admin.initialize_app()
     db = firestore.Client()
+
+
+class PromptRequest(BaseModel):
+    prompt: str
+    keep_alive: Optional[str] = None
+
+
+class DirectQueryResponse(BaseModel):
+    model: str
+    response: str
+    prompt: str
+
+
+class QueryRequest(BaseModel):
+    corpus: str
+    question: str
+    k: int = 4
+    section: Optional[str] = None
+    document_type: Optional[str] = None
+    keep_alive: Optional[str] = None
+
+class IngestRequest(BaseModel):
+    corpus: str
+    clean_rebuild: bool = False
+
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -43,17 +71,6 @@ def home():
     html = html.replace("__LOCAL_RUN__", str(LOCAL_RUN).lower())
     return HTMLResponse(html)
 
-class PromptRequest(BaseModel):
-    prompt: str
-    keep_alive: Optional[str] = None
-
-
-class DirectQueryResponse(BaseModel):
-    model: str
-    response: str
-    prompt: str
-
-
 
 @app.post("/warmup")
 def warmup():
@@ -69,32 +86,6 @@ def warmup():
     )
     r.raise_for_status()
     return {"status": "warmed", "model": MODEL}
-
-
-@app.post("/directQuery", response_model=DirectQueryResponse)
-def direct_query(req: PromptRequest):
-   r = requests.post(
-       OLLAMA_URL,
-       json={
-           "model": MODEL,
-           "prompt": req.prompt,
-           "stream": False,
-           "keep_alive": req.keep_alive or OLLAMA_KEEP_ALIVE,
-       },
-       timeout=300,
-   )
-   r.raise_for_status()
-   data = r.json()
-   return {
-       "model": MODEL,
-       "response": data.get("response", "").strip(),
-       "prompt": req.prompt,
-   }
-
-
-class IngestRequest(BaseModel):
-    corpus: str
-    clean_rebuild: bool = False
 
 
 @app.post("/rag/ingest")
@@ -120,17 +111,53 @@ def rag_ingest(req: IngestRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class QueryRequest(BaseModel):
-    corpus: str
-    question: str
-    k: int = 4
-    section: Optional[str] = None
-    document_type: Optional[str] = None
-    keep_alive: Optional[str] = None
+
+@app.post("/directQuery", response_model=DirectQueryResponse)
+def direct_query(req: PromptRequest, authorization: Optional[str] = Header(None)):
+    if not LOCAL_RUN:
+        uid = get_uid_from_auth_header(authorization)
+        run_count = increment_user_run_count(uid)
+
+        if run_count > 100:
+            raise HTTPException(
+                status_code=403,
+                detail="Users limited to 100 queries, contact Justin (justin.kasowski@gmail.com)"
+            )
+
+    r = requests.post(
+        OLLAMA_URL,
+        json={
+            "model": MODEL,
+            "prompt": req.prompt,
+            "stream": False,
+            "keep_alive": req.keep_alive or OLLAMA_KEEP_ALIVE,
+        },
+        timeout=300,
+    )
+    r.raise_for_status()
+    data = r.json()
+
+    response_payload = {
+        "model": MODEL,
+        "response": data.get("response", "").strip(),
+        "prompt": req.prompt,
+    }
+
+    return response_payload
 
 
 @app.post("/rag/query")
-def rag_query(req: QueryRequest):
+def rag_query(req: QueryRequest, authorization: Optional[str] = Header(None)):
+    if not LOCAL_RUN:
+        uid = get_uid_from_auth_header(authorization)
+        run_count = increment_user_run_count(uid)
+
+        if run_count > 100:
+            raise HTTPException(
+                status_code=403,
+                detail="Users limited to 100 queries, contact Justin (justin.kasowski@gmail.com)"
+            )
+
     try:
         corpus = req.corpus.strip().lower()
         auto_ingested = False
@@ -152,7 +179,7 @@ def rag_query(req: QueryRequest):
                 auto_ingested = True
                 ingest_result = ingest_corpus(corpus, clean_rebuild=False)
 
-        result = rag_answer(
+        response_payload = rag_answer(
             corpus=corpus,
             question=req.question,
             k=req.k,
@@ -162,9 +189,10 @@ def rag_query(req: QueryRequest):
             include_prompt=True,
         )
 
-        result["auto_ingested"] = auto_ingested
-        result["ingest_result"] = ingest_result
-        return result
+        response_payload["auto_ingested"] = auto_ingested
+        response_payload["ingest_result"] = ingest_result
+
+        return response_payload
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -213,3 +241,34 @@ def health():
         "ollama_url": OLLAMA_URL,
         "corpora": AVAILABLE_CORPORA,
     }
+
+def get_uid_from_auth_header(authorization: Optional[str]) -> Optional[str]:
+    if LOCAL_RUN:
+        return "local-dev-user"
+
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing auth token")
+
+    token = authorization.split("Bearer ", 1)[1].strip()
+
+    try:
+        decoded = auth.verify_id_token(token)
+        return decoded["uid"]
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid auth token")
+
+
+def increment_user_run_count(uid: str) -> int | None:
+    if LOCAL_RUN or (db is None):
+        return None
+
+    user_ref = db.collection("users").document(uid)
+    user_ref.set(
+        {
+            "run_count": Increment(1),
+            "last_run_at": firestore.SERVER_TIMESTAMP,
+        },
+        merge=True,
+    )
+    snap = user_ref.get()
+    return snap.to_dict().get("run_count", 0)

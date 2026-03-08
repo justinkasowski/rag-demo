@@ -2,12 +2,15 @@
 
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
-ENV OLLAMA_HOST=OLLAMA_HOST=http://ollama:11434/api/generate
+ENV OLLAMA_HOST=127.0.0.1:11434
+ENV OLLAMA_URL=http://127.0.0.1:11434/api/generate
+#ENV MODEL=llama3.2:3b
+ENV MODEL=llama3:8b
 ENV PORT=8080
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y curl ca-certificates procps zstd && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl ca-certificates procps zstd lshw pciutils && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://ollama.com/install.sh | sh
 

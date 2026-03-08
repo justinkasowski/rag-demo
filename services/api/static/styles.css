@@ -61,12 +61,9 @@ body {
 }
 
 .hero {
-  min-height: 150px;
   position: relative;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  padding: clamp(14px, 1.6vw, 24px) clamp(14px, 1.8vw, 28px);
+  min-height: 140px;
+  padding: 18px 22px;
   overflow: hidden;
 }
 
@@ -113,6 +110,44 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.integrations-card {
+  position: absolute;
+  left: clamp(14px, 1.8vw, 28px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.integration-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.integration-icon {
+  width: 28px;
+  height: 28px;
+  filter: brightness(0) invert(1); /* makes icons white */
+  opacity: 0.9;
+  transition: transform 0.14s ease, opacity 0.14s ease;
+}
+
+.integration-icon:hover {
+  transform: scale(1.08);
+  opacity: 1;
+}
+
+.integration-text {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.3;
+  max-width: 150px;
 }
 
 .status-card-inline {
