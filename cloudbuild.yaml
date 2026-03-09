@@ -1,42 +1,60 @@
 ﻿steps:
-- name: gcr.io/cloud-builders/docker
-  id: Build
-  args:
-    - build
-    - --no-cache
-    - -t
-    - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:$COMMIT_SHA
-    - .
+  - name: gcr.io/cloud-builders/docker
+    id: Pull cache image
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        docker pull us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:latest || exit 0
 
-- name: gcr.io/cloud-builders/docker
-  id: Push commit image
-  args:
-    - push
-    - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:$COMMIT_SHA
+  - name: gcr.io/cloud-builders/docker
+    id: Build
+    args:
+      - build
+      - -t
+      - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:$COMMIT_SHA
+      - -t
+      - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:latest
+      - --cache-from
+      - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:latest
+      - .
 
-- name: gcr.io/google.com/cloudsdktool/cloud-sdk
-  id: Deploy
-  entrypoint: gcloud
-  args:
-    - run
-    - deploy
-    - jobsearchsamplerepo
-    - --image
-    - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:$COMMIT_SHA
-    - --region
-    - us-east4
-    - --platform
-    - managed
-    - --allow-unauthenticated
-    - --set-cloudsql-instances
-    - project-39663646-855e-4910-834:us-east4:jobsearchsamplereposql
-    - --set-env-vars
-    - OLLAMA_MODEL=llama3:8b,OLLAMA_KEEP_ALIVE=10m,DB_NAME=rag_demo,INSTANCE_CONNECTION_NAME=project-39663646-855e-4910-834:us-east4:jobsearchsamplereposql
-    - --set-secrets
-    - FIREBASE_SERVICE_ACCOUNT=FIREBASE_SERVICE_ACCOUNT:latest,DB_PASS=DB_PASS:latest,SLACK_WEBHOOK_POLICY=SLACK_WEBHOOK_POLICY:latest,SLACK_WEBHOOK_HR=SLACK_WEBHOOK_HR:latest,SLACK_WEBHOOK_SALES=SLACK_WEBHOOK_SALES:latest,DISCORD_WEBHOOK_POLICY=DISCORD_WEBHOOK_POLICY:latest,DISCORD_WEBHOOK_HR=DISCORD_WEBHOOK_HR:latest,DISCORD_WEBHOOK_SALES=DISCORD_WEBHOOK_SALES:latest
+  - name: gcr.io/cloud-builders/docker
+    id: Push commit image
+    args:
+      - push
+      - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:$COMMIT_SHA
+
+  - name: gcr.io/cloud-builders/docker
+    id: Push latest
+    args:
+      - push
+      - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:latest
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    id: Deploy
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - jobsearchsamplerepo
+      - --image
+      - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:$COMMIT_SHA
+      - --region
+      - us-east4
+      - --platform
+      - managed
+      - --allow-unauthenticated
+      - --set-cloudsql-instances
+      - project-39663646-855e-4910-834:us-east4:jobsearchsamplereposql
+      - --set-env-vars
+      - OLLAMA_MODEL=llama3:8b,OLLAMA_KEEP_ALIVE=10m,DB_NAME=rag_demo,INSTANCE_CONNECTION_NAME=project-39663646-855e-4910-834:us-east4:jobsearchsamplereposql
+      - --set-secrets
+      - FIREBASE_SERVICE_ACCOUNT=FIREBASE_SERVICE_ACCOUNT:latest,DB_PASS=DB_PASS:latest,SLACK_WEBHOOK_HEALTHCHECK=SLACK_WEBHOOK_HEALTHCHECK:latest,SLACK_WEBHOOK_POLICY=SLACK_WEBHOOK_POLICY:latest,SLACK_WEBHOOK_HR=SLACK_WEBHOOK_HR:latest,SLACK_WEBHOOK_SALES=SLACK_WEBHOOK_SALES:latest,DISCORD_WEBHOOK_POLICY=DISCORD_WEBHOOK_POLICY:latest,DISCORD_WEBHOOK_HR=DISCORD_WEBHOOK_HR:latest,DISCORD_WEBHOOK_SALES=DISCORD_WEBHOOK_SALES:latest
 
 images:
-- us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:$COMMIT_SHA
+  - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:$COMMIT_SHA
+  - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:latest
 
 options:
   machineType: E2_HIGHCPU_8

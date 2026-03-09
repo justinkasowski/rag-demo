@@ -12,6 +12,7 @@ SLACK_WEBHOOKS = {
     "policy": os.environ.get("SLACK_WEBHOOK_POLICY", ""),
     "hr": os.environ.get("SLACK_WEBHOOK_HR", ""),
     "sales": os.environ.get("SLACK_WEBHOOK_SALES", ""),
+    "healthcheck": os.environ.get("SLACK_WEBHOOK_HEALTHCHECK", ""),
 }
 
 DISCORD_WEBHOOKS = {
@@ -22,7 +23,7 @@ DISCORD_WEBHOOKS = {
 
 MODEL = os.environ.get("OLLAMA_MODEL", "llama3:8b")
 OLLAMA_KEEP_ALIVE = os.environ.get("OLLAMA_KEEP_ALIVE", "10m")
-OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1/api/generate")
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434/api/generate")
 
 EMBED_MODEL_NAME = os.environ.get(
     "EMBED_MODEL_NAME",

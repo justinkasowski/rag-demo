@@ -20,7 +20,8 @@ from pydantic import BaseModel
 
 from config import AVAILABLE_CORPORA, MODEL, OLLAMA_KEEP_ALIVE, OLLAMA_URL, LOCAL_RUN
 from integrations.integrations_handler import plan_message, send_message
-from integrations.schemas import SendMessageRequest, SendMessageResponse, IntegrationPlanRequest
+from integrations.schemas import SendMessageRequest, SendMessageResponse, IntegrationPlanRequest, MessagePlan, \
+    Integration, Channel
 from rag.ingest import ingest_corpus
 from rag.retrieve import corpus_has_documents, rag_answer
 from sql.database import init_db
@@ -77,12 +78,6 @@ class BugReportRequest(BaseModel):
 
 
 #region Startup
-@app.get("/", response_class=HTMLResponse)
-def home():
-    html = Path("static/index.html").read_text()
-    html = html.replace("__LOCAL_RUN__", str(LOCAL_RUN).lower())
-    return HTMLResponse(html)
-
 
 @app.on_event("startup")
 def startup():
@@ -91,6 +86,13 @@ def startup():
             init_db()
         except Exception as e:
             print(f"Database init failed: {e}")
+
+
+@app.get("/", response_class=HTMLResponse)
+def home():
+    html = Path("static/index.html").read_text()
+    html = html.replace("__LOCAL_RUN__", str(LOCAL_RUN).lower())
+    return HTMLResponse(html)
 
 
 def check_ollama(model: str, keep_alive: str | None = None) -> dict:
@@ -163,6 +165,33 @@ def health():
         "corpora": AVAILABLE_CORPORA,
     }
 #endregion
+
+@app.get("/globalHealthCheck")
+def health_check_slack():
+    """
+    Called by an external scheduler. Writes health result to Slack.
+    """
+    result = check_ollama(MODEL, OLLAMA_KEEP_ALIVE)
+
+    plan = MessagePlan(
+        integrations=["slack"],
+        channel="healthcheck",
+        requiresReview=False,
+        rationale="Automated global health heartbeat."
+    )
+
+    if result["ok"]:
+        send_message(plan, f"PASS: {MODEL} healthy")
+        return {
+            "status": "ok",
+            "message": "Health check passed and Slack notified"
+        }
+
+    send_message(plan, f"FAIL: {MODEL} unhealthy - {result['error']}")
+    raise HTTPException(
+        status_code=503,
+        detail=result["error"]
+    )
 
 
 #region Ingest/Query

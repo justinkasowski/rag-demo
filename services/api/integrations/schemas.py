@@ -11,6 +11,7 @@ class Integration(str, Enum):
 
 class Channel(str, Enum):
     none = "none"
+    healthcheck = "healthcheck"
     policy = "policy"
     hr = "hr"
     sales = "sales"

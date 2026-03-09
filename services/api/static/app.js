@@ -9,14 +9,13 @@
 
   const LOCAL_RUN = window.LOCAL_RUN;
   const firebaseConfig = {
-  apiKey: "AIzaSyDaMaoajiceJbaGC3y7XK4qyc7kMkA2ApY",
-  authDomain: "jobsearchsamplerepo.firebaseapp.com",
-  projectId: "jobsearchsamplerepo",
-  storageBucket: "jobsearchsamplerepo.firebasestorage.app",
-  messagingSenderId: "622998584903",
-  appId: "1:622998584903:web:6c2c5c78a59b8cc2fb7b62",
-  measurementId: "G-BQWKGHL67L"
-  };
+  apiKey: "AIzaSyAb7TzlX41fWWxtVm-ckrYfkVtdx3MGO9U",
+  authDomain: "project-39663646-855e-4910-834.firebaseapp.com",
+  projectId: "project-39663646-855e-4910-834",
+  storageBucket: "project-39663646-855e-4910-834.firebasestorage.app",
+  messagingSenderId: "37975938497",
+  appId: "1:37975938497:web:ef977d59b7952af894cb40"
+};
 
   let auth = null;
   let firebaseToken = null;
