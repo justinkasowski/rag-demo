@@ -82,7 +82,11 @@ def home():
 
 @app.on_event("startup")
 def startup():
-    init_db()
+    if not LOCAL_RUN:
+        try:
+            init_db()
+        except Exception as e:
+            print(f"Database init failed: {e}")
 
 @app.post("/warmup")
 def warmup():
