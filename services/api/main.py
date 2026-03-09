@@ -4,9 +4,10 @@ from typing import Optional
 
 import requests
 import json
+import os
 
 import firebase_admin
-from firebase_admin import auth
+from firebase_admin import auth, credentials
 from google.cloud import firestore
 from google.cloud.firestore_v1 import Increment
 
@@ -30,7 +31,9 @@ QUERY_LIMIT = 100
 
 db = None
 if not LOCAL_RUN:
-    firebase_admin.initialize_app()
+    cred_dict = json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"])
+    cred = credentials.Certificate(cred_dict)
+    firebase_admin.initialize_app(cred)
     db = firestore.Client()
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -161,15 +164,15 @@ def rag_ingest(req: IngestRequest):
 
 @app.post("/directQuery", response_model=DirectQueryResponse)
 def direct_query(req: PromptRequest, authorization: Optional[str] = Header(None)):
-    # if not LOCAL_RUN:
-    #     uid = get_uid_from_auth_header(authorization)
-    #     run_count = increment_user_run_count(uid)
-    #
-    #     if run_count > 100:
-    #         raise HTTPException(
-    #             status_code=403,
-    #             detail="Users limited to 100 queries, contact Justin (justin.kasowski@gmail.com)"
-    #         )
+    if not LOCAL_RUN:
+        uid = get_uid_from_auth_header(authorization)
+        run_count = increment_user_run_count(uid)
+
+        if run_count > 100:
+            raise HTTPException(
+                status_code=403,
+                detail="Users limited to 100 queries, contact Justin (justin.kasowski@gmail.com)"
+            )
 
     r = requests.post(
         OLLAMA_URL,
@@ -195,15 +198,15 @@ def direct_query(req: PromptRequest, authorization: Optional[str] = Header(None)
 
 @app.post("/rag/query")
 def rag_query(req: QueryRequest, authorization: Optional[str] = Header(None)):
-    # if not LOCAL_RUN:
-    #     uid = get_uid_from_auth_header(authorization)
-    #     run_count = increment_user_run_count(uid)
-    #
-    #     if run_count > 100:
-    #         raise HTTPException(
-    #             status_code=403,
-    #             detail="Users limited to 100 queries, contact Justin (justin.kasowski@gmail.com)"
-    #         )
+    if not LOCAL_RUN:
+        uid = get_uid_from_auth_header(authorization)
+        run_count = increment_user_run_count(uid)
+
+        if run_count > 100:
+            raise HTTPException(
+                status_code=403,
+                detail="Users limited to 100 queries, contact Justin (justin.kasowski@gmail.com)"
+            )
 
     try:
         corpus = req.corpus.strip().lower()
