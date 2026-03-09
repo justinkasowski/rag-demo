@@ -8,6 +8,18 @@ DB_PASS = os.getenv("DB_PASS", "postgres")
 DB_NAME = os.getenv("DB_NAME", "postgres")
 INSTANCE_CONNECTION_NAME = os.getenv("INSTANCE_CONNECTION_NAME")
 
+SLACK_WEBHOOKS = {
+    "policy": os.environ.get("SLACK_WEBHOOK_POLICY", ""),
+    "hr": os.environ.get("SLACK_WEBHOOK_HR", ""),
+    "sales": os.environ.get("SLACK_WEBHOOK_SALES", ""),
+}
+
+DISCORD_WEBHOOKS = {
+    "policy": os.environ.get("DISCORD_WEBHOOK_POLICY", ""),
+    "hr": os.environ.get("DISCORD_WEBHOOK_HR", ""),
+    "sales": os.environ.get("DISCORD_WEBHOOK_SALES", ""),
+}
+
 MODEL = os.environ.get("OLLAMA_MODEL", "llama3:8b")
 OLLAMA_KEEP_ALIVE = os.environ.get("OLLAMA_KEEP_ALIVE", "10m")
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1/api/generate")
@@ -99,15 +111,3 @@ Examples:
 - "policy" is a channel, not an integration
 - "slack" is an integration, not a channel
 """
-
-SLACK_WEBHOOKS = {
-    "policy": os.environ.get("SLACK_WEBHOOK_POLICY", ""),
-    "hr": os.environ.get("SLACK_WEBHOOK_HR", ""),
-    "sales": os.environ.get("SLACK_WEBHOOK_SALES", ""),
-}
-
-DISCORD_WEBHOOKS = {
-    "policy": os.environ.get("DISCORD_WEBHOOK_POLICY", ""),
-    "hr": os.environ.get("DISCORD_WEBHOOK_HR", ""),
-    "sales": os.environ.get("DISCORD_WEBHOOK_SALES", ""),
-}

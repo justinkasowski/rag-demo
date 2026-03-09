@@ -182,6 +182,7 @@ QUESTION:
         OLLAMA_URL,
         json=payload,
         timeout=300,
+        stream=False
     )
     r.raise_for_status()
     data = r.json()
