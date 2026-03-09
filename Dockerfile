@@ -3,9 +3,9 @@
 ENV PYTHONUNBUFFERED=1
 ENV DEBIAN_FRONTEND=noninteractive
 ENV OLLAMA_HOST=127.0.0.1:11434
-ENV OLLAMA_URL=http://127.0.0.1:11434/api/
-ENV OLLAMA_KEEP_ALIVE=-1b
-ENV MODEL=llama3:8b
+ENV OLLAMA_URL=http://127.0.0.1:11434/api/generate
+ENV OLLAMA_KEEP_ALIVE=-1
+ENV OLLAMA_MODEL=llama3:8b
 ENV PORT=8080
 
 WORKDIR /app
@@ -17,14 +17,13 @@ RUN curl -fsSL https://ollama.com/install.sh | sh
 COPY services/api/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN bash -c "ollama serve & sleep 5 && OLLAMA_HOST=127.0.0.1:11434 ollama pull ${OLLAMA_MODEL}"
+RUN bash -c 'echo "OLLAMA_MODEL=$OLLAMA_MODEL" && test -n "$OLLAMA_MODEL" && ollama serve & sleep 5 && OLLAMA_HOST=127.0.0.1:11434 ollama pull "$OLLAMA_MODEL"'
 
 COPY data /data/
 COPY services/api /app/
 
 RUN sed -i 's/\r$//' /app/start.sh && sed -i '1s/^\xEF\xBB\xBF//' /app/start.sh
 RUN chmod +x /app/start.sh
-
 
 EXPOSE 8080
 EXPOSE 11434
