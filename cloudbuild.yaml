@@ -11,8 +11,7 @@
   id: Build
   args:
     - build
-    - --cache-from
-    - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:buildcache
+    - --no-cache
     - -t
     - us-east4-docker.pkg.dev/$PROJECT_ID/jobsearchsamplerepo/rag-demo:$COMMIT_SHA
     - -t
