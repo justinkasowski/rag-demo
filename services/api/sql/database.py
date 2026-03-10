@@ -24,7 +24,9 @@ def init_db():
             question TEXT,
             answer TEXT,
             integration_type TEXT,
+            llm_plan_integration TEXT,
             integration_channel TEXT,
+            llm_plan_channel TEXT,
             integration_rationale TEXT,
             integration_json JSONB,
             rag_json JSONB,
@@ -49,4 +51,14 @@ def init_db():
         conn.execute(text("""
         ALTER TABLE bug_reports
         ADD COLUMN IF NOT EXISTS manual_review_note TEXT;
+        """))
+
+        conn.execute(text("""
+        ALTER TABLE bug_reports
+        ADD COLUMN IF NOT EXISTS llm_plan_integration TEXT;
+        """))
+
+        conn.execute(text("""
+        ALTER TABLE bug_reports
+        ADD COLUMN IF NOT EXISTS llm_plan_channel TEXT;
         """))

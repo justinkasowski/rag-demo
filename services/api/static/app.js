@@ -595,6 +595,7 @@
 
 //region Slack/Discord Integration
 
+let originalIntegrationPlan = null
 let currentIntegrationPlan = null;
 let integrationAlreadySent = false;
 
@@ -650,10 +651,11 @@ let integrationAlreadySent = false;
 
     panel.classList.remove("hidden");
     sendBtn.classList.remove("manual-ready", "sent");
-    sendBtn.textContent = "Execute Manually";
+    sendBtn.textContent = "Execute";
     sendBtn.disabled = true;
 
     if (!plan) {
+      originalIntegrationPlan = null;
       currentIntegrationPlan = null;
       integrationAlreadySent = false;
 
@@ -669,6 +671,7 @@ let integrationAlreadySent = false;
     }
 
     currentIntegrationPlan = structuredClone(plan);
+    originalIntegrationPlan = structuredClone(plan);
     integrationAlreadySent = false;
 
     const integrations = Array.isArray(plan.integrations) ? plan.integrations : ["none"];
@@ -763,6 +766,8 @@ let integrationAlreadySent = false;
     const integrationType = document.getElementById("integrationTypeSelect")?.value || "";
     const integrationChannel = document.getElementById("integrationChannelSelect")?.value || "";
     const integrationRationale = document.getElementById("integrationRationale")?.value || "";
+    const llmPlanIntegration =  originalIntegrationPlan?.integrations?.find(x => x !== "none") || "none";
+    const llmPlanChannel =  originalIntegrationPlan?.channel || "none";
 
     let integrationJson = {};
     let ragJson = {};
@@ -797,7 +802,9 @@ let integrationAlreadySent = false;
         question,
         answer,
         integration_type: integrationType,
+        llm_plan_integration: llmPlanIntegration,
         integration_channel: integrationChannel,
+        llm_plan_channel: llmPlanChannel,
         integration_rationale: integrationRationale,
         integration_json: integrationJson,
         rag_json: ragJson,
@@ -822,6 +829,8 @@ let integrationAlreadySent = false;
     const integrationType = document.getElementById("integrationTypeSelect")?.value || "";
     const integrationChannel = document.getElementById("integrationChannelSelect")?.value || "";
     const integrationRationale = document.getElementById("integrationRationale")?.value || "";
+    const llmPlanIntegration =  originalIntegrationPlan?.integrations?.find(x => x !== "none") || "none";
+    const llmPlanChannel =  originalIntegrationPlan?.channel || "none";
 
     let integrationJson = {};
     let ragJson = {};
@@ -847,7 +856,9 @@ let integrationAlreadySent = false;
         question,
         answer,
         integration_type: integrationType,
+        llm_plan_integration: llmPlanIntegration,
         integration_channel: integrationChannel,
+        llm_plan_channel: llmPlanChannel,
         integration_rationale: integrationRationale,
         integration_json: integrationJson,
         rag_json: ragJson,

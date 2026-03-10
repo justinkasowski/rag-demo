@@ -1,4 +1,4 @@
-﻿import json
+﻿import re
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
@@ -187,12 +187,31 @@ QUESTION:
     r.raise_for_status()
     data = r.json()
 
+    answer = data.get("response", "").strip()
+
+    # convert [Source X] -> [X]
+    answer = re.sub(r"\[Source\s*(\d+)\]", r"[\1]", answer)
+
+    # find which citations are used
+    used_sources = sorted(set(int(x) for x in re.findall(r"\[(\d+)\]", answer)))
+
+    refs = []
+    for i in used_sources:
+        if 1 <= i <= len(docs):
+            meta = docs[i - 1].metadata or {}
+            doc_id = meta.get("doc_id", "unknown")
+            page = meta.get("page", "unknown")
+            refs.append(f"{i}: {doc_id}, page {page}")
+
+    if refs:
+        answer = answer + "\n\n" + "\n".join(refs)
+
     return {
         "corpus": corpus,
         "question": question,
         "section": section,
         "document_type": document_type,
-        "answer": data.get("response", "").strip(),
+        "answer": answer,
         "citations": _citations(docs),
         "prompt": prompt if include_prompt else None,
     }

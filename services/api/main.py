@@ -64,7 +64,9 @@ class BugReportRequest(BaseModel):
     question: Optional[str] = None
     answer: Optional[str] = None
     integration_type: Optional[str] = None
+    llm_plan_integration: Optional[str] = None
     integration_channel: Optional[str] = None
+    llm_plan_channel: Optional[str] = None
     integration_rationale: Optional[str] = None
     integration_json: Optional[dict] = None
     rag_json: Optional[dict] = None
@@ -79,9 +81,11 @@ class BugReportRequest(BaseModel):
 
 @app.on_event("startup")
 def startup():
-    if not LOCAL_RUN:
+    # if not LOCAL_RUN:
         try:
+            print("init_db")
             init_db()
+            print("success")
         except Exception as e:
             print(f"Database init failed: {e}")
 
@@ -352,7 +356,9 @@ def report_bug(req: BugReportRequest, authorization: Optional[str] = Header(None
             "question": req.question,
             "answer": req.answer,
             "integration_type": req.integration_type,
+            "llm_plan_integration": req.llm_plan_integration,
             "integration_channel": req.integration_channel,
+            "llm_plan_channel": req.llm_plan_channel,
             "integration_rationale": req.integration_rationale,
             "integration_json": json.dumps(req.integration_json or {}),
             "rag_json": json.dumps(req.rag_json or {}),
