@@ -7,7 +7,7 @@ import json
 import os
 
 import firebase_admin
-from firebase_admin import auth, credentials
+from firebase_admin import auth
 from google.cloud import firestore
 from google.cloud.firestore_v1 import Increment
 
@@ -32,9 +32,7 @@ QUERY_LIMIT = 100
 
 db = None
 if not LOCAL_RUN:
-    cred_dict = json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"])
-    cred = credentials.Certificate(cred_dict)
-    firebase_admin.initialize_app(cred)
+    firebase_admin.initialize_app()
     db = firestore.Client()
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
