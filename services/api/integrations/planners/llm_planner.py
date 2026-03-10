@@ -18,6 +18,7 @@ def _call_ollama_json(prompt: str, keep_alive: str | None = None) -> str:
             "prompt": prompt,
             "stream": False,
             "keep_alive": keep_alive or OLLAMA_KEEP_ALIVE,
+            "format": MessagePlan.model_json_schema()  #NOTE - NOT ALL MODELS SUPPORT SCHEMA FORMAT RESPONSE
         },
         timeout=300,
     )
