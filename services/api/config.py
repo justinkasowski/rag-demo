@@ -15,7 +15,12 @@ VECTOR_BACKEND = os.getenv("VECTOR_BACKEND", "chroma" if LOCAL_RUN else "pgvecto
 
 PGVECTOR_CONNECTION_STRING = os.getenv(
     "PGVECTOR_CONNECTION_STRING",
-    f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    (
+        f"postgresql+psycopg://{DB_USER}:{DB_PASS}@/{DB_NAME}"
+        f"?host=/cloudsql/{INSTANCE_CONNECTION_NAME}"
+    )
+    if not LOCAL_RUN
+    else f"postgresql+psycopg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 )
 
 SLACK_WEBHOOKS = {
